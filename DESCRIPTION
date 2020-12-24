@@ -1,0 +1,34 @@
+Package: jobwatcher
+Title: Build pipelines on SGE/HGC super-computer
+Version: 0.1.0.9001
+Authors@R:
+    person(given = "Shinichi",
+           family = "Namba",
+           role = c("aut", "cre"),
+           email = "sinnhazime@gmail.com")
+Description: This package provides various funcitons for building and running pipelines on SGE or SHIROKANE super-computer of Human Genome Center.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    XML,
+    rlang,
+    readr,
+    dplyr,
+    tidyr,
+    purrr,
+    stringr,
+    fs,
+    assertthat,
+    zeallot,
+    vctrs,
+    crayon,
+    cli
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
+Suggests:
+    testthat,
+    drake,
+    ggplot2,
+    clisymbols
+Language: en-US
