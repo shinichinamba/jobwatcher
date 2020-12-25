@@ -35,9 +35,15 @@ check_commands_exist <- function(vec) {
 }
 
 is_command_exist_which <- function(x) {
-  is.null(attr(suppressWarnings(system(paste0("which ", x), intern = TRUE, ignore.stdout = TRUE)), "status"))
+  is.null(attr(suppressWarnings(system(
+    paste0("which ", x),
+    intern = TRUE, ignore.stdout = TRUE)),
+    "status"))
 }
 
 is_command_exist_hash <- function(x) {
-  is.null(attr(suppressWarnings(system(paste0("hash ", x), intern = TRUE, ignore.stdout = TRUE)), "status"))
+  is.null(attr(suppressWarnings(system(
+    paste0("hash ", x),
+    intern = TRUE, ignore.stdout = TRUE)),
+    "status"))
 }

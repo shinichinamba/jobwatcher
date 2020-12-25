@@ -36,6 +36,7 @@ character_1_0 <- function(x) if (x == "") character(0) else x
 arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
   verify_scalar(n, tc)
   n <- vctrs::vec_cast(n, integer()) %>% as.character()
+  if (n == "1") return("")
   tc <- vctrs::vec_cast(tc, integer()) %>% as.character()
   one2n <- paste0("1-", n)
   if (!is.null(stepsize)) {

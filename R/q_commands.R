@@ -52,12 +52,19 @@ vacant_tbl <- function(colname){
     dplyr::mutate_all(as.character)
 }
 
+list2null <- function(x) if (is.list(x)) NULL else x
+
 try_xml_to_tbl_internal <- function(xml, command) {
   if (command == "qreport") {
     dplyr::as_tibble(XML::xmlToDataFrame(xml, stringsAsFactors = F), .name_repair = "minimal")
   } else if (command == "qstat") {
-    job_list <- XML::xmlToList(xml)$queue_info
-    purrr::map_dfr(job_list, ~ dplyr::as_tibble(purrr::compact(.x), .name_repair = "minimal"))
+    xml_list <- XML::xmlToList(xml)
+    xml_info <- c(xml_list$queue_info, xml_list$job_info) 
+    # If jobID is specified (Eg. qstat -j AAA), xml_list$djob_info should be used instead.
+    # In addition, "JB_name" in try_xml_to_tbl() should be replaced with "JB_job_name".
+    purrr::map_dfr(xml_info, ~ {
+      dplyr::as_tibble(purrr::compact(purrr::map(.x, list2null)), .name_repair = "minimal")
+    })
   }
 }
 
@@ -73,7 +80,7 @@ try_xml_to_tbl <- function(xml, command = c("qreport", "qstat", "qacct")){
                "ru_wallclock","cpu","memory","maxvmem","r_mem","r_q","r_cpu",
                "qdel","failed_txt","recommended_queue","recommended_memory","recommended_option"),
            "qstat" = 
-             c("JB_job_number", "JAT_prio", "JB_name", "JB_owner", "state", "JAT_start_time", "queue_name", "slots", ".attrs"),
+             c("JB_job_number", "JB_name", "JB_owner", "JAT_prio", "state", "JAT_start_time", "queue_name", "slots", ".attrs"),
            "qacct" = 
              c("qname", "hostname", "group", "owner", "project", "department", "jobname", "jobnumber", "taskid",
                "account", "priority", "qsub_time", "start_time", "end_time", "granted_pe", "slots",
@@ -205,10 +212,12 @@ qstat_xml_txt <- function(ID = NA, user = NA, type) {
 qstat <- function(ID = NA, user = NA, type = c("tibble", "xml", "txt")) { #TODO verify array job or options (e.g. -f)
   verify_uge()
   type <- match.arg(type)
-  if (type == "xml") res <- qstat_xml_txt(ID = NA, user = NA, "xml")
-  else {
-    res <- qstat_xml_txt(ID = NA, user = NA, "txt")
-    if (type == "tibble") res <- try_xml_to_tbl(res, "qstat")
+  if (type == "xml")  {
+    qstat_xml_txt(ID = ID, user = user, "xml")
+  } else if (type == "tibble") {
+    res <- try_xml_to_tbl(qstat_xml_txt(ID = NA, user = user, "xml"), "qstat")
+    dplyr::filter(res, JB_job_number %in% as.character(ID))
+  } else {
+    qstat_xml_txt(ID = ID, user = user, "txt")
   }
-  res
 }

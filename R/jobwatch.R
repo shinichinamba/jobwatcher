@@ -183,7 +183,7 @@ watch_uge <- function(ID, path = NA, time = NA,
           if (debug) print(exit_code) else print(head(exit_code))
         }
          
-        if (all(stringr::str_remove("^.*\t", exit_code) == "0")) {
+        if (all(stringr::str_remove(exit_code, "^.*\t") == "0")) {
           rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
           if (verbose) message(paste0("'", path, "' has been done.")) #message and print
           break

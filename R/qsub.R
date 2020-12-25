@@ -94,7 +94,7 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NA_charact
 #' @param ... Additional arguments passed directly to \code{\link{watch}} if watch is TRUE.
 #' @return Invisible. A list of Job ID, the path you write your file to, the time you execute this function, and if you specified '-sync y' flag, the exit status.
 #' @export
-qsub <- function(path, args = NA, watch = FALSE, verbose = TRUE, ...){
+qsub <- function(path, args = NA, watch = TRUE, verbose = TRUE, ...){
   verify_scalar(path, args)
   path <- fs::path_abs(path)
   verify_file_exists(path)
@@ -118,12 +118,41 @@ qsub <- function(path, args = NA, watch = FALSE, verbose = TRUE, ...){
     if (watch) res <- watch(ID, path, time, ..., as_qrecall = FALSE)
   } else {# not-uge
     if (verbose && !is.na(args)) rlang::inform("This is not UGE environment. argument 'args' will be ignored.")
-    if (fs::file_access(path, 'execute') && !is.na(read_shebang())) command <- path
+    shebang <- read_shebang(path)
+    if (fs::file_access(path, 'execute') && !is.na(shebang)) command <- path
     else {
       if (verbose) rlang::inform("Your file is not executable or shebang is not detected in your file. Your file will be executed on '/bin/bash'.")
       command <- paste0("/bin/bash ", path)
+    }
+    arrayjob_opt <- stringr::str_subset(readLines(path), "^#\\$.*-t ")
+    if (length(arrayjob_opt) == 0L) {
+      exit_code <- system(command, intern = FALSE, wait = TRUE)
+    } else {
+      if (!is.na(shebang) && 
+          stringr::str_detect(shebang, "/bin/bash", negate = TRUE) &&
+          stringr::str_detect(shebang, "/bin/env[:space:]+bash", negate = TRUE)) {
+        rlang::abort("Jobwatcher cannot handle array jobs whose shebang specify programs other than bash.")
+      } 
+      arrayjob_opt <- arrayjob_opt[length(arrayjob_opt)]
+      arrayjob_opt <- stringr::str_remove(arrayjob_opt, "^.*-t[:space:]+")
+      arrayjob_opt <- stringr::str_remove(arrayjob_opt, "[:space:].*$")
+      if (verbose) rlang::inform(paste0("An array job option was detected: ", arrayjob_opt))
+      arrayjob_opt <- as.integer(stringr::str_split_fixed(arrayjob_opt, "-|:", 3L)[1,])
+      SGE_TASK_ID_vec <- 
+        if (is.na(arrayjob_opt[3])) {
+          seq(arrayjob_opt[1], arrayjob_opt[2])
+        } else {
+          seq(arrayjob_opt[1], arrayjob_opt[2], arrayjob_opt[3])
+        }
+      arrayjob_commands <- paste0("SGE_TASK_ID=", SGE_TASK_ID_vec, "\nsource ", path)
+      tmp <- tempfile()
+      exit_code <- c()
+      for (command in arrayjob_commands) {
+        write(command, tmp)
+        exit_code <- c(exit_code, system(paste0("/bin/bash ", tmp), intern = FALSE, wait = TRUE))
       }
-    exit_code <- system(command, intern = FALSE, wait = TRUE)
+      fs::file_delete(tmp)
+    }
     res <- list(ID = NA_character_, path = path, time = time, exit_code = exit_code)
   }
   invisible(res)

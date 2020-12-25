@@ -19,7 +19,7 @@ verify_uge <- function() {
   assertthat::assert_that(get_jobwatcher_mode() %in% c("hgc", "uge"), msg = "This function works only in UGE environment.")
 }
 
-.as_character <- function(x) vctrs::vec_cast(x, character())
+.as_character <- function(x) as.character(x) #vctrs::vec_cast(x, character())
 .map_as_character <- function(...) {
   x <- rlang::list2(...)
   purrr::map(x, .as_character)
