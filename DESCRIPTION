@@ -1,6 +1,6 @@
 Package: jobwatcher
 Title: Build pipelines on SGE/HGC super-computer
-Version: 0.1.0.9001
+Version: 0.1.0.9002
 Authors@R:
     person(given = "Shinichi",
            family = "Namba",
@@ -23,9 +23,10 @@ Imports:
     zeallot,
     vctrs,
     crayon,
-    cli
+    cli,
+    utils
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Suggests:
     testthat,
     drake,

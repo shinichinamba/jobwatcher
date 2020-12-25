@@ -2,7 +2,7 @@
 #'
 #' @param ID Your job ID or job name
 #' @param path  A path of your qsub file (optional). If unspecified, max_repeat will be set as 0.
-#' @param time A character of \strong{\%Y\%m\%d\%H\%M} format. The time you execute qsub or time before that (optional).
+#' @param time A character of %Y%m%d%H%M format. The time you execute qsub or time before that (optional).
 #' @param sys_sleep A numeric. \emph{qreport} interval in seconds.
 #' @param max_repeat A integer. Total times of trying \emph{qsub} the same file.
 #' @param give_up One of "error", "warning", "message". Default is "error".
@@ -180,7 +180,7 @@ watch_uge <- function(ID, path = NA, time = NA,
         exit_code <- readLines(exit_code_file)
         if (verbose) {
           cat("Exit code (head): \n")
-          if (debug) print(exit_code) else print(head(exit_code))
+          if (debug) print(exit_code) else print(utils::head(exit_code))
         }
          
         if (all(stringr::str_remove(exit_code, "^.*\t") == "0")) {
@@ -206,10 +206,10 @@ watch_uge <- function(ID, path = NA, time = NA,
         c(ID_body, task) %<-% parse_id(ID)
         if (verbose) rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
         rlang::inform(qsub_verbose(ID_body, task, time))
+      } else {
+        give_up_fun(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
       }
-    }else{
-      give_up_fun(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
-    }
+    } 
   }
   invisible(list(ID = ID, path = path, time = time))
 }

@@ -1,7 +1,7 @@
 # utils for qsub command
 dots_parser <- function(..., sep_collapse = "\n") {
   rlang::list2(...) %>% 
-    purrr::map(vctrs::vec_cast, to = character()) %>% 
+    purrr::map(as.character) %>% 
     purrr::map_chr(stringr::str_c, collapse = sep_collapse) %>% 
     stringr::str_c(collapse = sep_collapse)
 }

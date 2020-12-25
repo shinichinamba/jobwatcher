@@ -1,4 +1,5 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 jobwatcher
 ==========
 
@@ -73,6 +74,10 @@ qsub用に適したリソースの指定を手軽に行えるようになりま�
 パイプライン中でよく似たファイルを自動で複製作成する場合などに,
 それぞれのファイル名を(ほぼ)一意にすることに使えます.
 
+qrecall用には, `write_and_qrecall`関数があります.
+qrecallの対象ファイル群を引数にとり,
+ファイルに保存した上でqrecallにかけてくれる関数です.
+
 Build a pipeline
 ----------------
 
@@ -86,22 +91,22 @@ Build a pipeline
 適宜編集してお使いください.
 
 ``` r
-build_pipeline("your_pipeline_name", "~/your_pipeline_path")
-#> ✔ Directory '~/your_pipeline_path' has been created.
+build_pipeline("your_pipeline_name", "your_pipeline_path", force = TRUE)
+#> <U+2714> Directory 'your_pipeline_path' has been created.
 #> 
-#> ✔ Directory '~/your_pipeline_path/log' has been created.
+#> <U+2714> Directory 'your_pipeline_path/log' has been created.
 #> 
-#> ✔ Directory '~/your_pipeline_path/script' has been created.
+#> <U+2714> Directory 'your_pipeline_path/script' has been created.
 #> 
-#> ✔ Directory '~/your_pipeline_path/config' has been created.
+#> <U+2714> Directory 'your_pipeline_path/config' has been created.
 #> 
-#> ✔ File '~/your_pipeline_path/your_pipeline_name.sh' has been written.
+#> <U+2714> File 'your_pipeline_path/your_pipeline_name.sh' has been written.
 #> 
-#> ✔ File '~/your_pipeline_path/your_pipeline_name.R' has been written.
+#> <U+2714> File 'your_pipeline_path/your_pipeline_name.R' has been written.
 #> 
-#> ● Please edit '~/your_pipeline_path/your_pipeline_name.R' for your own pipeline.
+#> ● Please edit 'your_pipeline_path/your_pipeline_name.R' for your own pipeline.
 #> 
-#> ● Then, run qsub ~/your_pipeline_path/your_pipeline_name.sh
+#> ● Then, run qsub("your_pipeline_path/your_pipeline_name.sh")
 #> 
 ```
 
@@ -118,7 +123,13 @@ UGE環境にpushするといった使い方が可能です.
 Updates
 -------
 
-### 0.0.8.900X (0.1.0 preview)
+### 0.2.0
+
+-   `qstat`関数を修正
+-   HGC環境以外でのサポートを向上
+-   `qsub`のwatch引数のデフォルトをTRUEに変更
+
+### 0.1.0
 
 -   関数名をラップ元の関数名と一致させた
 -   `qacct`, `qstat`関数を追加

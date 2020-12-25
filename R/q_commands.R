@@ -115,10 +115,10 @@ qreport_xml_txt <- function(ID, begin = NA, user = NA, end = NA, type) {
 
 #' get \emph{qreport} results in xml fromat
 #'
-#' @param ID Job ID or Job Name.
-#' @param begin A character of \strong{\%Y\%m\%d\%H\%M} format. (optional)
-#' @param user Your user ID. (optional)
-#' @param end A character of \strong{\%Y\%m\%d\%H\%M} format. (optional)
+#'@param ID Job ID or Job Name
+#' @param begin A character of %Y%m%d%H%M format
+#' @param user Your user ID
+#' @param end A character of %Y%m%d%H%M format
 #' @export
 qreport_xml <- function(ID, begin = NA, user = NA, end = NA) qreport_xml_txt(ID, begin, user, end, type = "xml")
 
@@ -216,7 +216,7 @@ qstat <- function(ID = NA, user = NA, type = c("tibble", "xml", "txt")) { #TODO 
     qstat_xml_txt(ID = ID, user = user, "xml")
   } else if (type == "tibble") {
     res <- try_xml_to_tbl(qstat_xml_txt(ID = NA, user = user, "xml"), "qstat")
-    dplyr::filter(res, JB_job_number %in% as.character(ID))
+    res[res[["JB_job_number"]] %in% as.character(ID), ]
   } else {
     qstat_xml_txt(ID = ID, user = user, "txt")
   }

@@ -85,7 +85,7 @@ qrecall用には, `write_and_qrecall`関数があります. qrecallの対象フ�
 適宜編集してお使いください.
 
 ```{r build_pipeline}
-build_pipeline("your_pipeline_name", "~/your_pipeline_path")
+build_pipeline("your_pipeline_name", "your_pipeline_path", force = TRUE)
 ```
 
 `qsub_function`で作成される関数は動作に影響を与えないダミー変数を引数にとります.\ 
@@ -95,6 +95,12 @@ build_pipeline("your_pipeline_name", "~/your_pipeline_path")
 パイプラインをデスクトップ環境で構築・テストし, UGE環境にpushするといった使い方が可能です.
 
 ## Updates
+
+### 0.2.0
+
+* `qstat`関数を修正
+* HGC環境以外でのサポートを向上
+* `qsub`のwatch引数のデフォルトをTRUEに変更
 
 ### 0.1.0
 

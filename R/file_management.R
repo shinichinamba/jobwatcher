@@ -56,7 +56,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       Hello <- c("H", "e", "l", "l", "o")
       
       ',{p_ruler("parse config")},'
-      # If you use config yaml files, we recommend fascinating {{config}} and {{rlist}} packages to parse them.
+      # If you use config yaml files, we recommend using {{config}} and {{rlist}} packages to parse them.
       
       ',{p_ruler("make directories")},'
       fs::dir_create("{dir_output}")
@@ -78,7 +78,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
         script_path = "makefile",
         script_dir = "{dir_script}",
         directory = "dir_opt",
-        other_req = "#$ -l os7"
+        parallel = "#$ -l s_vmem=5G,m_mem_free=5G"
       )
       pl_hello <- qsub_function(
         as_bash_array(Hello = Hello),
@@ -86,21 +86,21 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
         script_path = "hello",
         script_dir = "{dir_script}",
         directory = dir_opt,
-        other_req = "#$ -l os7"
+        parallel = "#$ -l s_vmem=5G,m_mem_free=5G"
       )
       pl_world <- qsub_function(
         "echo World >> {file_helloworld}",
         script_path = "world",
         script_dir = "{dir_script}",
         directory = dir_opt,
-        other_req = "#$ -l os7"
+        parallel = "#$ -l s_vmem=5G,m_mem_free=5G"
       )
       pl_helloworld <- qsub_function(
         "echo HelloWorld >> {file_helloworld}",
         script_path = "helloworld",
         script_dir = "{dir_script}",
         directory = dir_opt,
-        other_req = "#$ -l os7"
+        parallel = "#$ -l s_vmem=5G,m_mem_free=5G"
       )
       
       ',{p_ruler("qrecall")},'
@@ -131,11 +131,10 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
     make_qsubfile(
       paste0("Rscript ", fs::path(pipe_dir, pipe_name), ".R"),
       name = pipe_name,
-      parallel = parallel_option(slot = n_parallel, memory = pipe_memory, ljob = TRUE),
+      parallel = "#$ -l s_vmem=5G,m_mem_free=5G",
       arrayjob = arrayjob_option(),
       directory = directory_option(out = log_pipeline, err = log_pipeline),
-      use_bash_profile = TRUE,
-      other_req = "#$ -l os7"
+      use_bash_profile = TRUE
     )
   list(pipe_qsubfile, pipe_Rfile)
 }

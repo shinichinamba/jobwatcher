@@ -43,9 +43,8 @@ make_qsubfile <- function(...,
 #' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
 #' @return invisible. The path where you actually write your file.
 #' @export
-write_qsubfile <- function(x, path, recursive, add_time, .jobwatcher_mode = get_jobwatcher_mode()) {
+write_qsubfile <- function(x, path, recursive, add_time) {
   assertthat::assert_that(is.character(x))
-  assertthat::assert_that(.jobwatcher_mode %in% c("not_uge", "uge", "hgc"))
   verify_path(path, recursive)
   time <- format(Sys.time(), "%Y%m%d%H%M")
   if (add_time) {
