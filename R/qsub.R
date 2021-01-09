@@ -57,8 +57,8 @@ write_qsubfile <- function(x, path, recursive, add_time) {
   }
   if (get_jobwatcher_mode() == "uge") {
     # Append a command to write out the exit code
-    path_exit_code <- paste0(path, ".exit_code.txt")
-    x <- paste0(x, '\necho -e "${SGE_TASK_ID:-0}\t$?" >> ', path_exit_code)
+    path_exit_code <- paste0(stringr::str_replace_all(path, "'", "\\\\'"), ".exit_code.txt")
+    x <- paste0(x, '\necho -e "${SGE_TASK_ID:-0}\t$?" >> ', "'", path_exit_code, "'")
   }
   write(x, path, append = F)
   invisible(path)
@@ -101,7 +101,7 @@ qsub <- function(path, args = NA, watch = TRUE, verbose = TRUE, ...){
   args <- ifelse(is.na(args) || args == "", "", paste0(" ", args))
   time <- format(Sys.time(), "%Y%m%d%H%M")
   if (get_jobwatcher_mode() %in% c("hgc", "uge")) {
-    qsubres <- system(paste0("qsub ", path, args), intern = TRUE)
+    qsubres <- system(paste0("qsub '", stringr::str_replace_all(path, "'", "\\\\'"), "'", args), intern = TRUE)
     rlang::inform(qsubres)
     exit_code <- stringr::str_subset(qsubres, "exited with exit code")
     id <- stringr::str_subset(qsubres, "Your .+ been submitted")
@@ -121,7 +121,7 @@ qsub <- function(path, args = NA, watch = TRUE, verbose = TRUE, ...){
     if (fs::file_access(path, 'execute') && !is.na(shebang)) command <- path
     else {
       if (verbose) rlang::inform("Your file is not executable or shebang is not detected in your file. Your file will be executed on '/bin/bash'.")
-      command <- paste0("/bin/bash ", path)
+      command <- paste0("/bin/bash '", stringr::str_replace_all(path, "'", "\\\\'"), "'")
     }
     arrayjob_opt <- stringr::str_subset(readLines(path), "^#\\$.*-t ")
     if (length(arrayjob_opt) == 0L) {
