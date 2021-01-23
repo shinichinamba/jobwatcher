@@ -155,10 +155,9 @@ watch_uge <- function(ID, path = NA, time = NA,
   qsub_qrecall <- qsub
   if (modify_req) rlang::warn("modify_req is disabled in UGE.")
   
-  exit_code_file <- paste0(path, ".exit_code.txt") # see also write_qsubfile().
-  
   ID_body = task = NULL
   c(ID_body, task) %<-% parse_id(ID)
+  exit_code_file <- paste0(path, ".exit_code.", task, ".txt") # see also write_qsubfile(). # FIXME
   if (verbose) {
     rlang::inform(todo(crayon::green(path)))
     rlang::inform(qsub_verbose(ID_body, task, time))
@@ -174,21 +173,47 @@ watch_uge <- function(ID, path = NA, time = NA,
       print(rep)
     }
     if (nrow(rep) == 0) {
-      if (!fs::file_exists(exit_code_file)) {
-        if (verbose) rlang::inform(paste0("There is no exit-code file: ", exit_code_file))
-      } else {
-        exit_code <- readLines(exit_code_file)
+      exist_exit_code <- fs::file_exists(exit_code_file)
+      if (!all(exist_exit_code)) {
         if (verbose) {
-          cat("Exit code (head): \n")
-          if (debug) print(exit_code) else print(utils::head(exit_code))
+          rlang::inform(paste0(
+            sum(!exist_exit_code),
+            " exit-code files are missing for task IDs: ",
+            stringr::str_c(task[!exist_exit_code], collapse = ", ")
+          ))
+        }
+      } else {
+        # read and munge exit_code files
+        exit_code <- purrr::map_chr(exit_code_file, readLines)
+        exit_code <- stringr::str_split_fixed(exit_code, "\t", 2)
+        colnames(exit_code) <- c("task", "exit")
+        exit_code <- dplyr::as_tibble(exit_code, .name_repair = "minimal")
+        
+        if (verbose) {
+          cat("Exit code: \n")
+          dplyr::glimpse(exit_code)
         }
          
-        if (all(stringr::str_remove(exit_code, "^.*\t") == "0")) {
+        if (all(exit_code[["exit"]] == "0")) {
           rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
           if (verbose) message(paste0("'", path, "' has been done.")) #message and print
+          # remove exit-code files
+          fs::file_delete(exit_code_file[exist_exit_code])
           break
+        } else {
+          task_failed <- exit_code[["task"]][exit_code[["exit"]] != "0"]
+          if (verbose) {
+            rlang::inform(paste0(
+              length(task_failed),
+              " tasks had non-zero exit status: ",
+              stringr::str_c(task_failed, collapse = ", ")
+            ))
+          }
         }
       }
+      # remove exit-code files
+      fs::file_delete(exit_code_file[exist_exit_code])
+      
       counter <- counter + 1
       if (verbose) {
         rlang::inform(fail(

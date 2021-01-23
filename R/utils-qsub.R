@@ -18,11 +18,11 @@ try_system <- function(x, trial_times = 5L) {
 
 seq_int_chr <- function(from_to_by){
   from = to = by = integer()
-  c(from, to, by) %<-% (from_to_by %>% vctrs::vec_cast(integer()))
+  c(from, to, by) %<-% vctrs::vec_cast(from_to_by, integer())
   if (is.na(from) || is.na(to) || is.na(by)) {
     "undefined"
   }else{
-    seq.int(from, to, by) %>% as.character()
+    as.character(seq.int(from, to, by))
   }
 }
 
@@ -33,10 +33,10 @@ qsub_verbose <- function(ID_body, task, time){
 }
 
 parse_id <- function(ID) {
-  ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
+  ID_vec <- as.integer(stringr::str_split(ID, "\\.|-|:")[[1]])
   list(
     ID_body = ID_vec[1],
-    task = ID_vec[2:4] %>% seq_int_chr()
+    task = seq_int_chr(ID_vec[2:4])
   )
 }
 

@@ -35,6 +35,21 @@ make_qsubfile <- function(...,
     sep = "\n")
 }
 
+make_qsubfile_wrapper_uge <- function(x, path) {
+  x <- as.character(unlist(x))
+  x <- unlist(stringr::str_split(x, "\n"))
+  job_opt <- stringr::str_subset(x, "^#\\$ ")
+  path_exit_code <- paste0(stringr::str_replace_all(path, "'", "'\\\\''"), ".jobwatch.sh.exit_code.${SGE_TASK_ID}.txt")
+  c(
+    "#! /bin/env bash",
+    job_opt,
+    fs::path_abs(path),
+    "RETURN=$?",
+    paste0('echo -e "${SGE_TASK_ID}\t${RETURN}" > ', '"', path_exit_code, '"'),
+    "exit ${RETURN}"
+  )
+}
+
 #' write a qsub file
 #' 
 #' @param x Your qsub script.
@@ -56,9 +71,11 @@ write_qsubfile <- function(x, path, recursive, add_time) {
     }
   }
   if (get_jobwatcher_mode() == "uge") {
-    # Append a command to write out the exit code
-    path_exit_code <- paste0(stringr::str_replace_all(path, "'", "'\\\\''"), ".exit_code.txt")
-    x <- paste0(x, '\necho -e "${SGE_TASK_ID:-0}\t$?" >> ', "'", path_exit_code, "'")
+    write(x, path, append = F)
+    fs::file_chmod(path, "u+x")
+    # wrapper script with a command to write out the exit code
+    x <- make_qsubfile_wrapper_uge(x, path)
+    path <- paste0(path, ".jobwatch.sh")
   }
   write(x, path, append = F)
   invisible(path)
