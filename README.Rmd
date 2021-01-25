@@ -96,6 +96,11 @@ build_pipeline("your_pipeline_name", "your_pipeline_path", force = TRUE)
 
 ## Updates
 
+### 0.2.1
+
+* UGE環境ではqsubファイルをラップした実行ファイルを作成するよう修正
+* UGE環境ではexit codeをSGE_TASK_IDごとに作成したファイルに書き出すよう修正
+
 ### 0.2.0
 
 * `qstat`関数を修正

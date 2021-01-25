@@ -1,6 +1,6 @@
 Package: jobwatcher
 Title: Build pipelines on SGE/HGC super-computer
-Version: 0.2.0
+Version: 0.2.1
 Authors@R:
     person(given = "Shinichi",
            family = "Namba",
